@@ -24,12 +24,12 @@ class VehicleExtractor:
         vehicle, vehicle_start, vehicle_end = self.__get_vehicle_match(text)
         return vehicle, [vehicle_start, vehicle_end]
 
-    def match_from(self, text: str) -> tuple:
-        from_ = ""
-        from_start = -1
-        from_end = -1
+    def __match_address(self, text: str, pattern: re.Pattern) -> tuple:
+        address_ = ""
+        address_start = -1
+        address_end = -1
 
-        iterator = list(re.finditer(self.from_pattern, text))
+        iterator = list(re.finditer(pattern, text))
         assert len(iterator) <= 1
 
         if iterator:
@@ -37,28 +37,16 @@ class VehicleExtractor:
             address = AddressExtraction().run(m.group())
             if address['address']:
                 assert len(address['address']) == 1
-                from_ = address['address'][0]
-                from_start = address['address_span'][0] + m.start()
-                from_end = address['address_span'][1] + m.start()
-        return from_, [from_start, from_end]
+                address_ = address['address'][0]
+                address_start = address['address_span'][0] + m.start()
+                address_end = address['address_span'][1] + m.start()
+        return address_, [address_start, address_end]
+
+    def match_from(self, text: str) -> tuple:
+        return self.__match_address(text, self.from_pattern)
 
     def match_to(self, text: str) -> tuple:
-        to = ""
-        to_start = -1
-        to_end = -1
-
-        iterator = list(re.finditer(self.to_pattern, text))
-        assert len(iterator) <= 1
-
-        if iterator:
-            m = iterator[0]
-            address = AddressExtraction().run(m.group())
-            if address['address']:
-                assert len(address['address']) == 1
-                to = address['address'][0]
-                to_start = address['address_span'][0] + m.start()
-                to_end = address['address_span'][1] + m.start()
-        return to, [to_start, to_end]
+        return self.__match_address(text, self.to_pattern)
 
     def run(self, text: str) -> list:
         # replace half-space with space
