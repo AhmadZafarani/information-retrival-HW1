@@ -5,14 +5,34 @@ from parsi_io.parsi_io.modules.address_extractions import AddressExtraction
 
 class VehicleExtractor:
     def __init__(self):
+        car_models = r"پراید|پژو|تیبا|دنا|دناپلاس|رانا|بنز|بوگاتی|سمند|رانا|پیکان"
+        self.car_models_pattern = re.compile(
+            f"با (خودرو|خودروی|ماشین) ({car_models})")
+
         self.vehicle_names = r"اتوبوس|قطار|خودرو|ماشین|موتور|هواپیما|کشتی|قایق|مینی بوس|تریلی|مترو|تاکسی|هلی کوپتر|بالگرد|دوچرخه|ون|آژانس|موتور سیکلت|فضاپیما"
-        self.vehicle_names = f"{self.vehicle_names}|اسب|قاطر|شتر|الاغ|گاری|درشکه|دلیجان"
-        self.vehicle_names = f"{self.vehicle_names}|پراید|پژو|تیبا|دنا|دناپلاس|رانا|بنز|بوگاتی|سمند|رانا|شاهین|پیکان"
+        self.vehicle_names = f"{self.vehicle_names}|اسب|قاطر|شتر|الاغ|گاری|درشکه|دلیجان|{car_models}"
         self.vehicle_pattern = re.compile(f"با ({self.vehicle_names})")
         self.from_pattern = re.compile(r'از \w+')
         self.to_pattern = re.compile(r'به \w+')
 
+    def __get_car_model_match(self, text: str):
+        iterator = list(re.finditer(self.car_models_pattern, text))
+        if not iterator:
+            return None
+
+        text = iterator[0].group()
+        assert text.startswith('با ')
+
+        for c in ['خودرو', 'خودروی', 'ماشین']:
+            if text[3:].startswith(f"{c} "):
+                return text[4 + len(c):], iterator[0].start() + 4 + len(c), iterator[0].end()
+        assert False
+
     def __get_vehicle_match(self, text: str) -> tuple:
+        car_model_match = self.__get_car_model_match(text)
+        if car_model_match:
+            return car_model_match
+
         iterator = list(re.finditer(self.vehicle_pattern, text))
         assert len(iterator) == 1
         text = iterator[0].group()
@@ -69,6 +89,5 @@ class VehicleExtractor:
 
 if __name__ == '__main__':
     model = VehicleExtractor()
-    # input_text = input()
-    input_text = 'در حال رانندگی با خودروی تیبا هستم.'
+    input_text = input()
     print(model.run(input_text))

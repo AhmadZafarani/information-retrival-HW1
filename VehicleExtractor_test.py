@@ -38,6 +38,10 @@ class TestSum(unittest.TestCase):
         self.assertEqual(self.tester.run('من و خواهرم تیبا معمولا با هواپیما مسافرت می‌کنیم.'), self.build_output(
             'هواپیما', [27, 34], '', [-1, -1], '', [-1, -1]))
 
+    def test_car_model_tiba_no_to_and_from(self):
+        self.assertEqual(self.tester.run('در حال رانندگی با خودروی تیبا هستم.'), self.build_output(
+            'تیبا', [25, 29], '', [-1, -1], '', [-1, -1]))
+    
 
 if __name__ == '__main__':
     unittest.main()
